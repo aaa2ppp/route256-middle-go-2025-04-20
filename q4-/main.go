@@ -10,7 +10,7 @@ import (
 )
 
 type params struct {
-	hexagrams [][]int32
+	histograms [][]int32
 }
 
 type results struct {
@@ -23,36 +23,36 @@ func readParams(br *bufio.Reader) params {
 		panic(err)
 	}
 
-	hexagrams := makeMatrix[int32](n, m)
+	histograms := makeMatrix[int32](n, m)
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
 			var v int32
 			if _, err := fmt.Fscan(br, &v); err != nil {
 				panic(err)
 			}
-			hexagrams[i][j] = v
+			histograms[i][j] = v
 		}
 		if _, err := br.ReadSlice('\n'); err != nil {
 			panic(err)
 		}
 	}
 
-	return params{hexagrams}
+	return params{histograms}
 }
 
 func writeResults(bw *bufio.Writer, results results) {
 	fmt.Fprintln(bw, results.count)
 }
 
-// getBorder возвращает границу и границу сопрягаемой гексаграммы,
+// getBorder возвращает границу и границу сопрягаемой гистограммы,
 // в удобном для использования в качестве ключа мапы виде. Мне показалось
 // самым простым упаковать массив интов в строку.
-func getBorder(hexagram []int32) (string, string) {
-	m := len(hexagram)
+func getBorder(histogram []int32) (string, string) {
+	m := len(histogram)
 
 	minimum := int32(math.MaxInt32)
 	maximum := int32(0)
-	for _, v := range hexagram {
+	for _, v := range histogram {
 		minimum = min(minimum, v)
 		maximum = max(maximum, v)
 	}
@@ -60,7 +60,7 @@ func getBorder(hexagram []int32) (string, string) {
 	var positive strings.Builder
 	positive.Grow(m * 4)
 	for i := 0; i < m; i++ {
-		v := hexagram[i] - minimum
+		v := histogram[i] - minimum
 		for j := 0; j < 4; j++ {
 			positive.WriteByte(byte(v & 0xff))
 			v >>= 8
@@ -70,7 +70,7 @@ func getBorder(hexagram []int32) (string, string) {
 	var negative strings.Builder
 	negative.Grow(m * 4)
 	for i := m - 1; i >= 0; i-- {
-		v := maximum - hexagram[i]
+		v := maximum - histogram[i]
 		for j := 0; j < 4; j++ {
 			negative.WriteByte(byte(v & 0xff))
 			v >>= 8
@@ -84,8 +84,8 @@ func solve(params params) results {
 	count := 0
 	hashes := make(map[string]int)
 
-	for _, hexagram := range params.hexagrams {
-		positive, negative := getBorder(hexagram)
+	for _, histogram := range params.histograms {
+		positive, negative := getBorder(histogram)
 		count += hashes[negative]
 		hashes[positive]++
 	}
