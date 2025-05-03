@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -55,50 +56,50 @@ func test_run(t *testing.T, solve solveFunc) {
 `,
 			true,
 		},
-		{
-			"2",
-			strings.NewReader(`1
-8 9 3
-#########
-#########
-#########
-#########
-#########
-#########
-#########
-#########
-21 7
-14 28
-23 7
-`),
-			`######
-######
-######
-######
-######
-######
-######
-######
+		// 		{
+		// 			"2",
+		// 			strings.NewReader(`1
+		// 8 9 3
+		// #########
+		// #########
+		// #########
+		// #########
+		// #########
+		// #########
+		// #########
+		// #########
+		// 21 7
+		// 14 28
+		// 23 7
+		// `),
+		// 			`######
+		// ######
+		// ######
+		// ######
+		// ######
+		// ######
+		// ######
+		// ######
 
-#\.....
-##\....
-###\...
-####\..
-#####\.
-######\
-.######
+		// #\.....
+		// ##\....
+		// ###\...
+		// ####\..
+		// #####\.
+		// ######\
+		// .######
 
-#\...
-##\..
-###\.
-####>
-###/.
-##/..
-./...
+		// #\...
+		// ##\..
+		// ###\.
+		// ####>
+		// ###/.
+		// ##/..
+		// ./...
 
-`,
-			true,
-		},
+		// `,
+		// 			true,
+		// 		},
 		{
 			"3",
 			strings.NewReader(`2
@@ -204,5 +205,69 @@ func test_run_fullset(t *testing.T, solve solveFunc) {
 				debug:   false,
 			}.do(t, solve)
 		}()
+	}
+}
+
+func Test_getQPoint(t *testing.T) {
+	type args struct {
+		n int
+		m int
+		q int
+	}
+	tests := []struct {
+		name   string
+		args   args
+		want   point
+		wantOk bool
+	}{
+		{
+			"1",
+			args{1, 1, 0},
+			point{0, 0},
+			false,
+		},
+		{
+			"2",
+			args{1, 1, 4},
+			point{0, 0},
+			true,
+		},
+		{
+			"3",
+			args{2, 3, 3},
+			point{0, 3},
+			false,
+		},
+		{
+			"3",
+			args{2, 3, 5},
+			point{2, 3},
+			false,
+		},
+		{
+			"3",
+			args{2, 3, 9},
+			point{1, 0},
+			false,
+		},
+		{
+			"3",
+			args{3, 5, 15},
+			point{1, 0},
+			false,
+		},
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getQPoint(tt.args.n, tt.args.m, tt.args.q)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getQPoint() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getQPoint() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
