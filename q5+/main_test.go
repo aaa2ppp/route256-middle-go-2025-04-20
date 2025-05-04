@@ -12,14 +12,27 @@ import (
 	"unsafe"
 )
 
-const testDataDir = "./test_data/"
+const testDataDir = "./test_data"
 
 func Test_run(t *testing.T) {
 	test_run(t, solve)
 }
 
+func Test_run_set1(t *testing.T) {
+	test_run_fullset(t, solve, testDataDir)
+}
+
+func Test_run_set2(t *testing.T) {
+	test_run_fullset(t, solve, testDataDir+"2")
+}
+func Test_run_set3(t *testing.T) {
+	test_run_fullset(t, solve, testDataDir+"3")
+}
+
 func Test_run_fullset(t *testing.T) {
-	test_run_fullset(t, solve)
+	test_run_fullset(t, solve, testDataDir)
+	test_run_fullset(t, solve, testDataDir+"2")
+	test_run_fullset(t, solve, testDataDir+"3")
 }
 
 type runTest struct {
@@ -56,50 +69,50 @@ func test_run(t *testing.T, solve solveFunc) {
 `,
 			true,
 		},
-		// 		{
-		// 			"2",
-		// 			strings.NewReader(`1
-		// 8 9 3
-		// #########
-		// #########
-		// #########
-		// #########
-		// #########
-		// #########
-		// #########
-		// #########
-		// 21 7
-		// 14 28
-		// 23 7
-		// `),
-		// 			`######
-		// ######
-		// ######
-		// ######
-		// ######
-		// ######
-		// ######
-		// ######
+		{
+			"2",
+			strings.NewReader(`1
+8 9 3
+#########
+#########
+#########
+#########
+#########
+#########
+#########
+#########
+21 7
+14 28
+23 7
+`),
+			`######
+######
+######
+######
+######
+######
+######
+######
 
-		// #\.....
-		// ##\....
-		// ###\...
-		// ####\..
-		// #####\.
-		// ######\
-		// .######
+#\.....
+##\....
+###\...
+####\..
+#####\.
+######\
+.######
 
-		// #\...
-		// ##\..
-		// ###\.
-		// ####>
-		// ###/.
-		// ##/..
-		// ./...
+#\...
+##\..
+###\.
+####>
+###/.
+##/..
+./...
 
-		// `,
-		// 			true,
-		// 		},
+`,
+			true,
+		},
 		{
 			"3",
 			strings.NewReader(`2
@@ -117,6 +130,36 @@ func test_run(t *testing.T, solve solveFunc) {
 ####
 
 #
+
+`,
+			true,
+		},
+		{
+			"8x",
+			strings.NewReader(`1
+1 9 7
+#....##.#
+16 5
+2 9
+8 5
+5 8
+4 1
+1 8
+4 5
+`),
+			`####
+
+###
+
+###
+
+###
+
+###
+
+###
+
+###
 
 `,
 			true,
@@ -147,7 +190,7 @@ func (tt runTest) do(t *testing.T, solve solveFunc) {
 	})
 }
 
-func test_run_fullset(t *testing.T, solve solveFunc) {
+func test_run_fullset(t *testing.T, solve solveFunc, testDataDir string) {
 	files, err := os.ReadDir(testDataDir)
 	if err != nil {
 		panic(err)
@@ -224,45 +267,45 @@ func Test_getQPoint(t *testing.T) {
 			"1",
 			args{1, 1, 0},
 			point{0, 0},
-			false,
+			true,
 		},
 		{
 			"2",
 			args{1, 1, 4},
 			point{0, 0},
-			true,
+			false,
 		},
 		{
 			"3",
 			args{2, 3, 3},
 			point{0, 3},
-			false,
+			true,
 		},
 		{
 			"3",
 			args{2, 3, 5},
 			point{2, 3},
-			false,
+			true,
 		},
 		{
 			"3",
 			args{2, 3, 9},
 			point{1, 0},
-			false,
+			true,
 		},
 		{
 			"3",
 			args{3, 5, 15},
 			point{1, 0},
-			false,
+			true,
 		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getQPoint(tt.args.n, tt.args.m, tt.args.q)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getQPoint() error = %v, wantErr %v", err, tt.wantErr)
+			got, ok := getAxisPoint(tt.args.n, tt.args.m, tt.args.q)
+			if ok != tt.wantOk {
+				t.Errorf("getQPoint() ok = %v, want %v", ok, tt.wantOk)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
